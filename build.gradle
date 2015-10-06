@@ -28,11 +28,13 @@ repositories {
 }
 
 dependencies {
+    compile('org.springframework.boot:spring-boot-starter-logging')
+    //compile('org.springframework.boot:spring-boot-starter-security')
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
-    compile('org.springframework.boot:spring-boot-starter-hateoas')
-    compile('org.springframework.boot:spring-boot-starter-security')
+    compile('org.springframework.boot:spring-boot-starter-data-rest')
+    compile('org.codehaus.groovy:groovy')
     runtime('org.postgresql:postgresql:9.4-1201-jdbc41')
-    testCompile('org.springframework.boot:spring-boot-starter-test') 
+    testCompile('org.spockframework:spock-core')
 }
 
 eclipse {
