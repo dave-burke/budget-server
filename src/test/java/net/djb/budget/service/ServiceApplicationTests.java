@@ -1,4 +1,4 @@
-package net.djb.budget;
+package net.djb.budget.service;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
