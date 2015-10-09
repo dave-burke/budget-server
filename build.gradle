@@ -33,7 +33,8 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.springframework.boot:spring-boot-starter-data-rest')
     compile('org.codehaus.groovy:groovy')
-    runtime('org.postgresql:postgresql:9.4-1201-jdbc41')
+    //runtime('org.postgresql:postgresql:9.4-1201-jdbc41')
+    runtime('com.h2database:h2:1.4.189')
     testCompile('org.spockframework:spock-core')
 }
 
