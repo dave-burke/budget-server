@@ -1,4 +1,4 @@
-package net.djb.budget.service.data.schema;
+package net.djb.budget.rest.data.schema;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

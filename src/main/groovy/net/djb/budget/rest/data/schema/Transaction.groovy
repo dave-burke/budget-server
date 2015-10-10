@@ -1,4 +1,4 @@
-package net.djb.budget.service.data.schema;
+package net.djb.budget.rest.data.schema;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -9,7 +9,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 
-import net.djb.budget.service.constant.TransactionStatus;
+import net.djb.budget.rest.constant.TransactionStatus;
 import java.time.LocalDateTime;
 
 @Entity
