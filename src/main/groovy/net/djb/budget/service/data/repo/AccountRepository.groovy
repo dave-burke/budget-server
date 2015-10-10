@@ -7,5 +7,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 interface AccountRepository extends CrudRepository<Account, Long> {
 
+	Account findByName(String name);
+
+	List<Account> findByIsActive(boolean isActive);
+
 }
 
