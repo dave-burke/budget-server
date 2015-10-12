@@ -1,4 +1,4 @@
-package net.djb.budget.service.constant;
+package net.djb.budget.rest.constant;
 
 enum TransactionStatus {
 	

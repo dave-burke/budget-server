@@ -1,7 +1,7 @@
-package net.djb.budget.service.data.repo;
+package net.djb.budget.rest.data.repo;
 
 import org.springframework.data.repository.PagingAndSortingRepository;
-import net.djb.budget.service.data.schema.Transaction;
+import net.djb.budget.rest.data.schema.Transaction;
 import org.springframework.stereotype.Repository;
 
 @Repository

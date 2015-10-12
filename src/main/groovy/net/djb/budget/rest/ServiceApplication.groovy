@@ -1,4 +1,4 @@
-package net.djb.budget.service;
+package net.djb.budget.rest;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
