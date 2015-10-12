@@ -1,0 +1,13 @@
+INSERT INTO account (id, name, is_active) VALUES (1, 'expenses', true);
+INSERT INTO account (id, name, is_active) VALUES (2, 'equity/init', true);
+INSERT INTO account (id, name, is_active) VALUES (3, 'equity/income/paycheck', true);
+INSERT INTO account (id, name, is_active) VALUES (4, 'liabilities/credit/credit card', true);
+INSERT INTO account (id, name, is_active) VALUES (5, 'liabilities/loans/auto', true);
+INSERT INTO account (id, name, is_active) VALUES (6, 'assets/checking/bills', true);
+INSERT INTO account (id, name, is_active) VALUES (7, 'assets/checking/save', true);
+INSERT INTO account (id, name, is_active) VALUES (8, 'assets/checking/misc', true);
+INSERT INTO account (id, name, is_active) VALUES (9, 'assets/checking/fun', true);
+INSERT INTO account (id, name, is_active) VALUES (10, 'assets/checking/pending/credit card', true);
+INSERT INTO account (id, name, is_active) VALUES (11, 'assets/checking/pending/old card', false);
+INSERT INTO account (id, name, is_active) VALUES (12, 'assets/checking/pending/checks', true);
+INSERT INTO account (id, name, is_active) VALUES (13, 'assets/savings', true);
