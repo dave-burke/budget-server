@@ -31,7 +31,7 @@ class Transaction {
 	TransactionStatus status;
 
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name = "transactionId", nullable = false)
+	@JoinColumn(name = "transaction_id", nullable = false)
 	List<Transfer> transfers;
 
 }
