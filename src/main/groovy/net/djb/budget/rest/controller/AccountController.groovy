@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.dao.DataIntegrityViolationException
 
 import net.djb.budget.rest.service.AccountService;
 import net.djb.budget.rest.data.schema.Account;
@@ -28,19 +29,21 @@ class AccountController {
 		}
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.POST)
-	void insert(@RequestBody Account account) {
-		accountService.save(account);
+	@RequestMapping(method = RequestMethod.POST)
+	ResponseEntity<Account> save(@RequestBody Account account) {
+		try {
+			account = accountService.save(account);
+			return new ResponseEntity<Account>(account, HttpStatus.CREATED);
+		} catch(DataIntegrityViolationException e) {
+			Account existing = accountService.findByName(account.name);
+			return new ResponseEntity<Account>(existing, HttpStatus.CONFLICT);
+		}
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-	ResponseEntity<String> update(@PathVariable long id, @RequestBody Account account) {
-		if(id == account.id ){
-			accountService.save(account);
-			return new ResponseEntity<String>(HttpStatus.OK);
-		} else {
-			return new ResponseEntity<String>("Path ID must match ID in request body.", HttpStatus.BAD_REQUEST);
-		}
+	ResponseEntity<Account> save(@PathVariable long id, @RequestBody Account account) {
+		account.id = id;
+		return save(account);
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
