@@ -44,8 +44,13 @@ class AccountController {
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	void update(@PathVariable long id) {
-		accountService.delete(account);
+	ResponseEntity<Account> delete(@PathVariable long id) {
+		Account deactivated = accountService.deactivate(id);
+		if(deactivated) {
+			return new ResponseEntity<Account>(deactivated, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<Account>(HttpStatus.NOT_FOUND);
+		}
 	}
 
 }
