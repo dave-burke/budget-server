@@ -16,9 +16,8 @@ class Transfer {
 	@GeneratedValue
 	Long id;
 
-	@ManyToOne(optional = false)
-	@JoinColumn(name = "account_id", nullable=false)
-	Account account;
+	@Column(nullable = false)
+	String account;
 
 	@Column(nullable = false)
 	Long amount;
