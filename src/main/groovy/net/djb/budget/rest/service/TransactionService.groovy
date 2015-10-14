@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import net.djb.budget.rest.data.schema.Transaction;
 import net.djb.budget.rest.data.repo.TransactionRepository;
+import net.djb.budget.rest.exception.UnbalancedTransactionException;
 
 @Service
 class TransactionService {
@@ -33,9 +34,15 @@ class TransactionService {
 	}
 
 	Transaction save(Transaction transaction) {
-		transactions.save(transaction);
-		LOG.info("Saved {}", transaction.description);
-		return transaction;
+		Long balance = transaction.transfers.sum{it.amount};
+		if(balance != 0){
+			LOG.warn("Transaction does not balance! ({})", balance);
+			throw new UnbalancedTransactionException(balance);
+		} else {
+			transactions.save(transaction);
+			LOG.info("Saved '{}' ({})", transaction.description, transaction.id);
+			return transaction;
+		}
 	}
 
 	void delete(long transactionId) {

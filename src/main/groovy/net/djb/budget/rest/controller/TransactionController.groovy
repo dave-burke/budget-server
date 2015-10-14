@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import net.djb.budget.rest.exception.UnbalancedTransactionException;
 import net.djb.budget.rest.service.TransactionService;
 import net.djb.budget.rest.data.schema.Transaction;
 
