@@ -17,7 +17,7 @@ class Transfer {
 	Long id;
 
 	@ManyToOne(optional = false)
-	@JoinColumn(name = "accountId", nullable=false)
+	@JoinColumn(name = "account_id", nullable=false)
 	Account account;
 
 	@Column(nullable = false)
