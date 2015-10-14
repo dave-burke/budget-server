@@ -20,7 +20,7 @@ class AccountController {
 
 	@RequestMapping(method = RequestMethod.GET)
 	Map<String,Long> list() {
-		return null; 
+		return accountService.balances();
 	}
 
 }
