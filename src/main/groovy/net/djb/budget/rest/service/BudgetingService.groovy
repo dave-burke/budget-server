@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.UnsupportedTemporalTypeException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -21,7 +22,6 @@ import net.djb.budget.rest.data.schema.Transaction;
 import net.djb.budget.rest.data.schema.Transfer;
 import net.djb.budget.rest.data.repo.RecurringTransferRepository;
 import net.djb.budget.rest.data.repo.TransferRepository;
-import net.djb.budget.rest.exception.UnsupportedChronoUnitException;
 
 @Service
 class BudgetingService {
@@ -134,7 +134,7 @@ class BudgetingService {
 		case ChronoUnit.YEARS:
 			return Period.ofYears(t.quantity);
 		default:
-			throw new UnsupportedChronoUnitException(t.unit);
+			throw new UnsupportedTemporalTypeException("${t.unit} is not a supported ChronoUnit for RecurringTransfer Periods. Supported units are DAYS, WEEKS, MONTHS, & YEARS.");
 		}
 	}
 	
