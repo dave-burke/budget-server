@@ -1,5 +1,7 @@
 package net.djb.budget.rest.controller;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,18 +22,21 @@ class BudgetingController {
 	@Autowired BudgetingService budgetingService;
 
 	@RequestMapping(value = "/expenses", method = RequestMethod.GET)
-	List<RecurringTransfer> listFixedExpenses() {
-		return budgetingService.listFixedExpenses();
+	List<RecurringTransfer> listFixedExpenses(@RequestParam(required=false) LocalDate effectiveDate) {
+		effectiveDate ?: LocalDate.now();
+		return budgetingService.listFixedExpenses(effectiveDate);
 	}
 
 	@RequestMapping(value = "/income", method = RequestMethod.GET)
-	List<RecurringTransfer> listFixedIncome() {
-		return budgetingService.listFixedIncome();
+	List<RecurringTransfer> listFixedIncome(@RequestParam(required=false) LocalDate effectiveDate) {
+		effectiveDate ?: LocalDate.now();
+		return budgetingService.listFixedIncome(effectiveDate);
 	}
 
-	@RequestMapping(value = "/budgets/{id}", method = RequestMethod.GET)
-	Transaction buildBudget(@PathVariable long id) {
-		return budgetingService.buildBudget(id);
+	@RequestMapping(value = "/income/{id}/budget", method = RequestMethod.GET)
+	Transaction buildBudget(@PathVariable long id, @RequestParam(required=false) LocalDate effectiveDate) {
+		effectiveDate ?: LocalDate.now();
+		return budgetingService.buildBudget(id, effectiveDate);
 	}
 
 }

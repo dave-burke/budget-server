@@ -180,7 +180,7 @@ class BudgetingServiceTest extends Specification {
 		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [];
 
 		when:
-		Transaction result = service.buildBudget(incomeId);
+		Transaction result = service.buildBudget(incomeId, effectiveDate);
 
 		then:
 		result.transfers.size() == 1;

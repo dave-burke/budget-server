@@ -31,15 +31,15 @@ class BudgetingService {
 	@Autowired RecurringTransferRepository recurringTransfers;
 	@Autowired TransferRepository transfers;
 
-	List<RecurringTransfer> listFixedExpenses(LocalDate effectiveDate = LocalDate.now()) {
+	List<RecurringTransfer> listFixedExpenses(LocalDate effectiveDate) {
 		return recurringTransfers.findWhereAmountIsPositive(effectiveDate);
 	}
 
-	List<RecurringTransfer> listFixedIncome(LocalDate effectiveDate = LocalDate.now()) {
+	List<RecurringTransfer> listFixedIncome(LocalDate effectiveDate) {
 		return recurringTransfers.findWhereAmountIsNegative(effectiveDate);
 	}
 
-	Transaction buildBudget(long incomeId, LocalDate effectiveDate = LocalDate.now()){
+	Transaction buildBudget(long incomeId, LocalDate effectiveDate){
 		RecurringTransfer income = recurringTransfers.findOne(incomeId);
 		buildTransaction(income, effectiveDate);
 	}
