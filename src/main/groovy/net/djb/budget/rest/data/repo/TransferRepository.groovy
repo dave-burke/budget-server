@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 interface TransferRepository extends CrudRepository<Transfer, Long> {
 
-	@Query("SELECT t.account FROM Transfer t")
+	@Query("SELECT DISTINCT t.account FROM Transfer t ORDER BY t.account")
 	List<String> findAccountNames();
 
 	@Query("SELECT SUM(t.amount) FROM Transfer t WHERE t.account = :account")
