@@ -31,22 +31,32 @@ class BudgetingControllerTest extends Specification {
 	}
 
 	def "GET /expenses"() {
-		expect:
+		when:
 		MvcResult result = mockMvc.perform(get("/expenses"))
 				.andExpect(status().isOk())
 				.andReturn();
+		then:
+		1 * budgetingService.listFixedExpenses({it != null});
 	}
+
 	def "GET /income"() {
-		expect:
+		when:
 		MvcResult result = mockMvc.perform(get("/income"))
 				.andExpect(status().isOk())
 				.andReturn();
+		then:
+		1 * budgetingService.listFixedIncome({it != null});
 	}
 	def "GET /income/1/budget"() {
-		expect:
-		MvcResult result = mockMvc.perform(get("/income/1/budget"))
+		given:
+		def id = 1;
+
+		when:
+		MvcResult result = mockMvc.perform(get("/income/${id}/budget"))
 				.andExpect(status().isOk())
 				.andReturn();
+		then:
+		1 * budgetingService.buildBudget(id, {it != null});
 	}
 
 }
