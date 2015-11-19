@@ -4,17 +4,21 @@ buildscript {
     }
     repositories {
         maven {url "http://repo1.maven.org/maven2"}
+	jcenter()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}") 
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath('io.spring.gradle:dependency-management-plugin:0.5.2.RELEASE')
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.11.3'
     }
 }
 
 apply plugin: 'groovy'
+apply plugin: 'project-report'
 apply plugin: 'eclipse'
-apply plugin: 'spring-boot' 
-apply plugin: 'io.spring.dependency-management' 
+apply plugin: 'spring-boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.github.ben-manes.versions'
 
 jar {
     baseName = 'service'
