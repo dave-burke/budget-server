@@ -7,6 +7,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import spock.lang.Specification;
+import spock.lang.Unroll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -28,67 +29,24 @@ class BalanceControllerTest extends Specification {
 		mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 	}
 
-	def "GET /balance"() {
+	@Unroll("GET #url")
+	def "GET url"() {
 		expect:
-		MvcResult result = mockMvc.perform(get("/balance"))
+		MvcResult result = mockMvc.perform(get(url))
 				.andExpect(status().isOk())
 				.andReturn();
+		where:
+		url | _
+		"/balance" | _
+		"/balance/account" | _
+		"/balance/account:name" | _
+		"/balance/account?asOf=2015-01-01T00:00" | _
+		"/balance?asOf=2015-01-01T00:00" | _
+		"/balances" | _
+		"/balances/account" | _
+		"/balances/account?asOf=2015-01-01T00:00" | _
+		"/balances?asOf=2015-01-01T00:00" | _
 	}
 
-	def "GET /balance/account"() {
-		expect:
-		MvcResult result = mockMvc.perform(get("/balance/account"))
-				.andExpect(status().isOk())
-				.andReturn();
-	}
-
-	def "GET /balance/account.name"() {
-		expect:
-		MvcResult result = mockMvc.perform(get("/balance/account.name"))
-				.andExpect(status().isOk())
-				.andReturn();
-	}
-
-	def "GET /balances/account?asOf=2015-01-01T00:00"() {
-		expect:
-		MvcResult result = mockMvc.perform(get("/balances/account?asOf=2015-01-01T00:00"))
-				.andExpect(status().isOk())
-				.andReturn();
-	}
-
-	def "GET /balance/account?asOf=2015-01-01T00:00"() {
-		expect:
-		MvcResult result = mockMvc.perform(get("/balance/account?asOf=2015-01-01T00:00"))
-				.andExpect(status().isOk())
-				.andReturn();
-	}
-
-	def "GET /balances/account"() {
-		expect:
-		MvcResult result = mockMvc.perform(get("/balances/account"))
-				.andExpect(status().isOk())
-				.andReturn();
-	}
-
-	def "GET /balances?asOf=2015-01-01T00:00"() {
-		expect:
-		MvcResult result = mockMvc.perform(get("/balances?asOf=2015-01-01T00:00"))
-				.andExpect(status().isOk())
-				.andReturn();
-	}
-
-	def "GET /balance?asOf=2015-01-01T00:00"() {
-		expect:
-		MvcResult result = mockMvc.perform(get("/balance?asOf=2015-01-01T00:00"))
-				.andExpect(status().isOk())
-				.andReturn();
-	}
-
-	def "GET /balances"() {
-		expect:
-		MvcResult result = mockMvc.perform(get("/balances"))
-				.andExpect(status().isOk())
-				.andReturn();
-	}
 }
 
