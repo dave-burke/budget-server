@@ -37,15 +37,10 @@ class BalanceControllerTest extends Specification {
 				.andReturn();
 		where:
 		url | _
-		"/balance" | _
-		"/balance/account" | _
-		"/balance/account:name" | _
-		"/balance/account?asOf=2015-01-01T00:00" | _
-		"/balance?asOf=2015-01-01T00:00" | _
-		"/balances" | _
-		"/balances/account" | _
-		"/balances/account?asOf=2015-01-01T00:00" | _
-		"/balances?asOf=2015-01-01T00:00" | _
+		"/balance/map" | _
+		"/balance/map?asOf=2015-01-01T00:00" | _
+		"/balance/tree" | _
+		"/balance/tree?asOf=2015-01-01T00:00" | _
 	}
 
 }

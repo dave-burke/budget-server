@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.djb.budget.rest.data.repo.BalanceRepository;
+import net.djb.budget.rest.util.BalanceTree;
 
 @Service
 class BalanceService {
@@ -26,11 +27,15 @@ class BalanceService {
 	}
 
 	Map<String, Long> calcBalances(LocalDateTime asOf = LocalDateTime.now()){
-		return balances.calcBalances(asOf) ?: 0;
+		return balances.calcBalances(asOf) ?: Collections.emptyMap();
 	}
 
 	Map<String, Long> calcBalances(String accountName, LocalDateTime asOf = LocalDateTime.now()){
-		return balances.calcBalances(accountName, asOf) ?: 0;
+		return balances.calcBalances(accountName, asOf) ?: Collections.emptyMap();
+	}
+	
+	BalanceTree calcBalanceTree(LocalDateTime asOf = LocalDateTime.now()){
+		return new BalanceTree(calcBalances(asOf));
 	}
 
 }

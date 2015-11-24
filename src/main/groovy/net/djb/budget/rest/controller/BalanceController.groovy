@@ -14,34 +14,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.djb.budget.rest.service.BalanceService;
+import net.djb.budget.rest.util.BalanceTree;
 
 @RestController
+@RequestMapping("/balance")
 class BalanceController {
 
 	@Autowired BalanceService balanceService;
 
-	@RequestMapping(value="/balance", method = RequestMethod.GET)
-	Map<String,Long> getBalance(@RequestParam(required = false) @DateTimeFormat(pattern="yyyy-MM-dd'T'HH:mm") LocalDateTime asOf) {
-		asOf = asOf ?: LocalDateTime.now();
-		return ["": balanceService.calcBalance(asOf)];
-	}
-
-	@RequestMapping(value="/balances", method = RequestMethod.GET)
-	Map<String,Long> getBalances(@RequestParam(required = false) @DateTimeFormat(pattern="yyyy-MM-dd'T'HH:mm") LocalDateTime asOf) {
+	@RequestMapping(value="/map", method = RequestMethod.GET)
+	Map<String,Long> getBalanceMap(@RequestParam(required = false) @DateTimeFormat(pattern="yyyy-MM-dd'T'HH:mm") LocalDateTime asOf) {
 		asOf = asOf ?: LocalDateTime.now();
 		return balanceService.calcBalances(asOf);
 	}
 
-	@RequestMapping(value="/balance/{accountName}", method = RequestMethod.GET)
-	Map<String,Long> getBalance(@PathVariable String accountName, @RequestParam(required = false) @DateTimeFormat(pattern="yyyy-MM-dd'T'HH:mm") LocalDateTime asOf) {
+	@RequestMapping(value="/tree", method = RequestMethod.GET)
+	BalanceTree getBalanceTree(@RequestParam(required = false) @DateTimeFormat(pattern="yyyy-MM-dd'T'HH:mm") LocalDateTime asOf) {
 		asOf = asOf ?: LocalDateTime.now();
-		return [accountName: balanceService.calcBalance(accountName, asOf)];
-	}
-
-	@RequestMapping(value="/balances/{accountName}", method = RequestMethod.GET)
-	Map<String,Long> getBalances(@PathVariable String accountName, @RequestParam(required = false) @DateTimeFormat(pattern="yyyy-MM-dd'T'HH:mm") LocalDateTime asOf) {
-		asOf = asOf ?: LocalDateTime.now();
-		return balanceService.calcBalances(accountName, asOf);
+		return balanceService.calcBalanceTree(asOf);
 	}
 
 }

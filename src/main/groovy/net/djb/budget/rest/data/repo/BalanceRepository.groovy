@@ -7,8 +7,13 @@ import javax.persistence.EntityManager
 import javax.persistence.Query
 import org.springframework.stereotype.Repository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Repository
 class BalanceRepository {
+
+	static final Logger LOG = LoggerFactory.getLogger(BalanceRepository.class);
 
 	@PersistenceContext
 	private EntityManager em;
@@ -29,7 +34,7 @@ class BalanceRepository {
 	}
 
 	Map<String, Long> calcBalances(LocalDateTime asOf) {
-		Query query = em.createQuery("SELECT tr.account AS account, SUM(tr.amount) AS amount FROM Transaction tx JOIN tx.transfers tr WHERE tx.time <= :asOf GROUP BY tr.account");
+		Query query = em.createQuery("SELECT tr.account, SUM(tr.amount) FROM Transaction tx JOIN tx.transfers tr WHERE tx.time <= :asOf GROUP BY tr.account");
 		query.setParameter("asOf", asOf);
 
 		List<Object[]> results = query.getResultList();
