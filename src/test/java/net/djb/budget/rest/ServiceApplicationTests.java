@@ -33,8 +33,8 @@ public class ServiceApplicationTests {
 		});
 
 		assertEquals(new Long(0L), balances.calcBalance(LocalDateTime.now()));
-		assertEquals(new Long(75L), balances.calcBalance("assets/checking", LocalDateTime.now()));
-		assertEquals(5, balances.calcBalances("assets/checking", LocalDateTime.now()).size());
+		assertEquals(new Long(75L), balances.calcBalance("assets:checking", LocalDateTime.now()));
+		assertEquals(5, balances.calcBalances("assets:checking", LocalDateTime.now()).size());
 	}
 
 }
