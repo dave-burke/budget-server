@@ -7,7 +7,7 @@ class BalanceTree {
 	
 	String name;
 	Long balance = 0;
-	private Map<String, BalanceTree> childNodes = new HashMap<>();
+	private Map<String, BalanceTree> childNodes = new TreeMap<>();
 
 	public BalanceTree(){
 		this.name = ROOT_NODE_NAME;
@@ -74,8 +74,8 @@ class BalanceTree {
 		return path.split(ACCOUNT_PATH_SEPARATOR).collect(new LinkedList(), {it});
 	}
 
-	public Map<String, BalanceTree> getSubaccounts(){
-		return Collections.unmodifiableMap(childNodes);
+	public Collection<BalanceTree> getSubaccounts(){
+		return Collections.unmodifiableCollection(childNodes.values());
 	}
 
 	public String prettyPrint(){

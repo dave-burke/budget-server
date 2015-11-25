@@ -58,7 +58,7 @@ class BalanceTreeTest extends Specification {
 		root.addBalance("assets", 1);
 		
 		when:
-		root.subaccounts["assets"].addBalance("checking", 1);
+		root.subaccounts[0].addBalance("checking", 1);
 
 		then:
 		thrown(UnsupportedOperationException);
