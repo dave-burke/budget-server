@@ -23,19 +23,19 @@ class BudgetingController {
 
 	@RequestMapping(value = "/expenses", method = RequestMethod.GET)
 	List<RecurringTransfer> listFixedExpenses(@RequestParam(required=false) LocalDate effectiveDate) {
-		effectiveDate ?: LocalDate.now();
+		effectiveDate = effectiveDate ?: LocalDate.now();
 		return budgetingService.listFixedExpenses(effectiveDate);
 	}
 
 	@RequestMapping(value = "/income", method = RequestMethod.GET)
 	List<RecurringTransfer> listFixedIncome(@RequestParam(required=false) LocalDate effectiveDate) {
-		effectiveDate ?: LocalDate.now();
+		effectiveDate = effectiveDate ?: LocalDate.now();
 		return budgetingService.listFixedIncome(effectiveDate);
 	}
 
 	@RequestMapping(value = "/income/{id}/budget", method = RequestMethod.GET)
 	Transaction buildBudget(@PathVariable long id, @RequestParam(required=false) LocalDate effectiveDate) {
-		effectiveDate ?: LocalDate.now();
+		effectiveDate = effectiveDate ?: LocalDate.now();
 		return budgetingService.buildBudget(id, effectiveDate);
 	}
 

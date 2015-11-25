@@ -17,11 +17,11 @@ import java.time.temporal.UnsupportedTemporalTypeException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import net.djb.budget.rest.data.repo.RecurringTransferRepository;
 import net.djb.budget.rest.data.schema.RecurringTransfer;
 import net.djb.budget.rest.data.schema.Transaction;
 import net.djb.budget.rest.data.schema.Transfer;
-import net.djb.budget.rest.data.repo.RecurringTransferRepository;
-import net.djb.budget.rest.data.repo.TransferRepository;
+import net.djb.budget.rest.service.BalanceService;
 
 @Service
 class BudgetingService {
@@ -29,7 +29,7 @@ class BudgetingService {
 	static final Logger LOG = LoggerFactory.getLogger(BudgetingService.class);
 
 	@Autowired RecurringTransferRepository recurringTransfers;
-	@Autowired TransferRepository transfers;
+	@Autowired BalanceService balances;
 
 	List<RecurringTransfer> listFixedExpenses(LocalDate effectiveDate) {
 		return recurringTransfers.findWhereAmountIsPositive(effectiveDate);
@@ -69,7 +69,7 @@ class BudgetingService {
 	}
 
 	private BigDecimal calcDeduction(RecurringTransfer income, RecurringTransfer expense, List<RecurringTransfer> allIncome, LocalDate effectiveDate){
-		long currentBalance = transfers.calcBalance(expense.account);
+		long currentBalance = balances.calcBalance(expense.account);
 
 		Long totalExpenses = null;
 		Long totalIncome = null;

@@ -7,12 +7,13 @@ import java.time.temporal.ChronoUnit;
 
 import net.djb.budget.rest.data.schema.*;
 import net.djb.budget.rest.data.repo.*;
+import net.djb.budget.rest.service.*;
 
 class BudgetingServiceTest extends Specification {
 
 	BudgetingService service = new BudgetingService();
 	RecurringTransferRepository recurringTransfers;
-	TransferRepository transfers;
+	BalanceService balances;
 
 	static final RecurringTransfer SEMI_WEEKLY_PAYCHECK = new RecurringTransfer(description: "every two weeks", frequency: 1, quantity: 2, unit: ChronoUnit.WEEKS,
 			amount: -1000, account: "income/paychecks/one", startDate: LocalDate.of(2015,1,2));
@@ -34,9 +35,9 @@ class BudgetingServiceTest extends Specification {
 
 	def setup(){
 		recurringTransfers = Mock(RecurringTransferRepository);
-                transfers = Mock(TransferRepository);
+		balances = Mock(BalanceService);
 		service.recurringTransfers = recurringTransfers;
-                service.transfers = transfers;
+                service.balances = balances;
 	}
 
 	def "correctly calculates a weekly expense for a semiWeekly paycheck"() {
@@ -47,7 +48,7 @@ class BudgetingServiceTest extends Specification {
 		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [SEMI_WEEKLY_PAYCHECK];
 		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [WEEKLY_EXPENSE];
 
-		transfers.calcBalance(_) >> balance;
+		balances.calcBalance(_) >> balance;
 
 		expect:
 		Transaction budget = service.buildBudget(incomeId, effectiveDate);
@@ -69,7 +70,7 @@ class BudgetingServiceTest extends Specification {
 		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [SEMI_WEEKLY_PAYCHECK];
 		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [MONTHLY_BILL];
 
-		transfers.calcBalance(_) >> balance;
+		balances.calcBalance(_) >> balance;
 
 		expect:
 		Transaction budget = service.buildBudget(incomeId, effectiveDate);
@@ -90,7 +91,7 @@ class BudgetingServiceTest extends Specification {
 		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [SEMI_WEEKLY_PAYCHECK];
 		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [ANNUAL_BILL];
 
-		transfers.calcBalance(_) >> balance;
+		balances.calcBalance(_) >> balance;
 
 		expect:
 		Transaction budget = service.buildBudget(incomeId, effectiveDate);
@@ -111,7 +112,7 @@ class BudgetingServiceTest extends Specification {
 		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [BI_MONTHLY_PAYCHECK_1, BI_MONTHLY_PAYCHECK_2];
 		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [WEEKLY_EXPENSE];
 
-		transfers.calcBalance(_) >> balance;
+		balances.calcBalance(_) >> balance;
 
 		expect:
 		Transaction budget = service.buildBudget(incomeId, effectiveDate);
@@ -134,7 +135,7 @@ class BudgetingServiceTest extends Specification {
 		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [BI_MONTHLY_PAYCHECK_1, BI_MONTHLY_PAYCHECK_2];
 		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [MONTHLY_BILL];
 
-		transfers.calcBalance(_) >> balance;
+		balances.calcBalance(_) >> balance;
 
 		expect:
 		Transaction budget = service.buildBudget(incomeId, effectiveDate);
@@ -157,7 +158,7 @@ class BudgetingServiceTest extends Specification {
 		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [BI_MONTHLY_PAYCHECK_1, BI_MONTHLY_PAYCHECK_2];
 		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [ANNUAL_BILL];
 
-		transfers.calcBalance(_) >> balance;
+		balances.calcBalance(_) >> balance;
 
 		expect:
 		Transaction budget = service.buildBudget(incomeId, effectiveDate);

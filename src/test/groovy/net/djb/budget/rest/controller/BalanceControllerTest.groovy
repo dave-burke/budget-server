@@ -1,38 +1,46 @@
 package net.djb.budget.rest.controller;
 
-import net.djb.budget.rest.service.AccountService;
+import net.djb.budget.rest.service.BalanceService;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import spock.lang.Specification;
+import spock.lang.Unroll;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-class AccountControllerTest extends Specification {
+class BalanceControllerTest extends Specification {
 
-	AccountController controller;
-	AccountService accountService;
+	BalanceController controller;
+	BalanceService balanceService;
 	MockMvc mockMvc;
 
 	def setup(){
-		controller = new AccountController();
+		controller = new BalanceController();
 
-		accountService = Mock(AccountService);
-		controller.accountService = accountService;
+		balanceService = Mock(BalanceService);
+		controller.balanceService = balanceService;
 
 		mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
 	}
 
-	def "GET /accounts"() {
+	@Unroll("GET #url")
+	def "GET url"() {
 		expect:
-		MvcResult result = mockMvc.perform(get("/accounts"))
+		MvcResult result = mockMvc.perform(get(url))
 				.andExpect(status().isOk())
 				.andReturn();
+		where:
+		url | _
+		"/balance/map" | _
+		"/balance/map?asOf=2015-01-01T00:00" | _
+		"/balance/tree" | _
+		"/balance/tree?asOf=2015-01-01T00:00" | _
 	}
 
 }
