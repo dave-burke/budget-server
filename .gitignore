@@ -3,3 +3,7 @@ build
 *.class
 *.orig
 .gradle
+.idea
+.classpath
+.project
+.settings
