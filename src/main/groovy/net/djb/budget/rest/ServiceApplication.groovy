@@ -1,20 +1,26 @@
 package net.djb.budget.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import net.djb.budget.rest.data.schema.RecurringTransfer;
+import net.djb.budget.rest.data.schema.Transaction;
+import net.djb.budget.rest.data.schema.Transfer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
 @SpringBootApplication
 class ServiceApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ServiceApplication.class, args);
+		SpringApplication.run(ServiceApplication, args);
 	}
 
 	@Bean
@@ -35,6 +41,16 @@ class ServiceApplication {
 				.allowedOrigins("*");
 			}
 		};
+	}
+
+	@Bean
+	public RepositoryRestConfigurer repositoryRestConfigurer() {
+		return new RepositoryRestConfigurerAdapter() {
+			@Override
+			public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+				config.exposeIdsFor(RecurringTransfer, Transaction, Transfer);
+			}
+		}
 	}
 }
 
