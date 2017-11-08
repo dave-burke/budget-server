@@ -93,6 +93,9 @@ class BudgetingService {
 		}
 	}
 
+	/**
+	 * Calculates the next occurrence of the given RecurringTransfer <i>on or after</i> the given effectiveDate.
+	 */
 	private LocalDate nextOccurrenceOf(RecurringTransfer t, LocalDate effectiveDate){
 		LocalDate iDate = t.startDate;
 		int n = 0;
@@ -102,6 +105,9 @@ class BudgetingService {
 		return iDate;
 	}
 
+	/**
+	 * Calculates occurrances of <code>t</code> between <code>start</code> (inclusive) and <code>end</code> (exclusive).
+	 */
 	private int calcRecurrencesBetween(RecurringTransfer t, LocalDate start, LocalDate end){
 		if(start == end){
 			return 1;
@@ -113,6 +119,12 @@ class BudgetingService {
 			if(iDate >= start){
 				occurrencesBetween++;
 			}
+			/* We can't just increment iDate by periodOf(t) because:
+			 *   01/30 + 1 Month = 02/28
+			 *   02/28 + 1 Month = 03/28
+			 * BUT
+			 *   01/30 + 2 Months = 03/30
+			 */
 			occurrencesTotal++;
 			iDate = t.startDate.plus(periodOf(t).multipliedBy(occurrencesTotal));
 		}
