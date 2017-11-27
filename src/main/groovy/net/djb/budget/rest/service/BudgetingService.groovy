@@ -44,65 +44,70 @@ class BudgetingService {
 		buildTransaction(income, effectiveDate);
 	}
 
-	private buildTransaction(RecurringTransfer income, LocalDate effectiveDate) {
+	private Transaction buildTransaction(RecurringTransfer income, LocalDate effectiveDate) {
 		Transaction transaction = new Transaction();
 		transaction.description = income.description;
-		transaction.time = LocalDateTime.now();
+		transaction.time = effectiveDate.atStartOfDay(); 
 
 		transaction.transfers = [new Transfer(account: income.account, amount: income.amount)];
 
 		List<RecurringTransfer> allIncome = listFixedIncome(effectiveDate);
-		listFixedExpenses(effectiveDate).each{
-			transaction.transfers << buildTransfer(income, it, allIncome, effectiveDate);
+		listFixedExpenses(effectiveDate).each{ expense ->
+			transaction.transfers << buildTransfer(income, expense, allIncome);
 		};
 
 		return transaction;
 	}
 
-	private Transfer buildTransfer(RecurringTransfer income, RecurringTransfer expense, List<RecurringTransfer> allIncome, LocalDate effectiveDate){
+	private Transfer buildTransfer(RecurringTransfer income, RecurringTransfer expense, List<RecurringTransfer> allIncome){
 		Transfer transfer = new Transfer();
 		transfer.account = expense.account;
 
-		transfer.amount = round(calcDeduction(income, expense, allIncome, effectiveDate));
+		transfer.amount = round(calcDeduction(income, expense, allIncome));
 
 		return transfer;
 	}
 
-	private BigDecimal calcDeduction(RecurringTransfer income, RecurringTransfer expense, List<RecurringTransfer> allIncome, LocalDate effectiveDate){
-		long currentBalance = balances.calcBalance(expense.account);
+	private BigDecimal calcDeduction(RecurringTransfer income, RecurringTransfer expense, List<RecurringTransfer> allIncome){
+		RecurringTransfer annualized = annualize(income);
+		long annualTotal = allIncome.collect { annualize(it) }.sum();
+		def ratio = annualized / annualTotal;
 
-		Long totalExpenses = null;
-		Long totalIncome = null;
-		if((effectiveDate + periodOf(expense)) < (effectiveDate + periodOf(income))){
-			LocalDate endDate = effectiveDate.plus(periodOf(income).multipliedBy(4));
-
-			totalExpenses = calcRecurrencesBetween(expense, effectiveDate, endDate) * expense.amount;
-			totalIncome = allIncome.sum{
-				calcRecurrencesBetween(it, effectiveDate, endDate) * it.amount;
-			};
-			BigDecimal ratio = income.amount / totalIncome;
-			return (totalExpenses * ratio) - currentBalance;
-		} else {
-			LocalDate nextExpense = nextOccurrenceOf(expense, effectiveDate); 
-			totalExpenses = expense.amount;
-			totalIncome = allIncome.sum{
-				calcRecurrencesBetween(it, effectiveDate, nextExpense) * it.amount;
-			};
-			BigDecimal ratio = income.amount / totalIncome;
-			return (totalExpenses - currentBalance) * ratio;
-		}
+		return expense.amount * ratio;
 	}
 
-	/**
-	 * Calculates the next occurrence of the given RecurringTransfer <i>on or after</i> the given effectiveDate.
-	 */
-	private LocalDate nextOccurrenceOf(RecurringTransfer t, LocalDate effectiveDate){
-		LocalDate iDate = t.startDate;
-		int n = 0;
-		while(iDate < effectiveDate){
-			iDate = t.startDate.plus(periodOf(t).multipliedBy(n++));
+	private RecurringTransfer annualize(RecurringTransfer t){
+		int quantity = t.quantity
+		int frequency = t.frequency
+		ChronoUnit unit = t.unit
+		long amount = t.amount
+
+		int ratio;
+		switch(t.unit){
+		case ChronoUnit.DAYS:
+			ratio = 365
+			break
+		case ChronoUnit.WEEKS:
+			ratio = 52
+			break
+		case ChronoUnit.MONTHS:
+			ratio = 12
+			break
+		case ChronoUnit.YEARS:
+			ratio = 1
+			break
 		}
-		return iDate;
+		long annualAmount = amount * ratio * (frequency / quantity)
+		LOG.debug("${t.description}: ${annualAmount} = ${amount} * ${ratio} * (${frequency} / ${quantity})");
+
+		RecurringTransfer annualized = new RecurringTransfer();
+		annualized.description = t.description;
+		annualized.account = t.account;
+		annualized.quantity = 1;
+		annualized.frequency = 1;
+		annualized.unit = ChronoUnit.YEARS
+		annualized.amount = annualAmount
+		return annualized;
 	}
 
 	/**
