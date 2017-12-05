@@ -112,16 +112,13 @@ class BudgetingService {
 	/**
 	 * Calculates occurrances of <code>t</code> between <code>start</code> (inclusive) and <code>end</code> (exclusive).
 	 */
-	private int calcRecurrencesBetween(RecurringTransfer t, LocalDate start, LocalDate end){
-		if(start == end){
-			return 1;
-		}
-		LocalDate iDate = t.startDate;
+	private LocalDate[] calcRecurrencesBetween(RecurringTransfer t, LocalDate start, LocalDate end){
+		def occurrencesBetween = [];
 		int occurrencesTotal = 0;
-		int occurrencesBetween = 0;
+		LocalDate iDate = t.startDate;
 		while(iDate < end){
 			if(iDate >= start){
-				occurrencesBetween++;
+				occurrencesBetween << iDate;
 			}
 			/* We can't just increment iDate by periodOf(t) because:
 			 *   01/30 + 1 Month = 02/28

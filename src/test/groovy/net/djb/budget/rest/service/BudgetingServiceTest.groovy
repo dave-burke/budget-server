@@ -88,7 +88,7 @@ class BudgetingServiceTest extends Specification {
 		def startDate = LocalDate.of(2015, 1, 2);
 
 		expect:
-		result == service.calcRecurrencesBetween(SEMI_WEEKLY_PAYCHECK, startDate, endDate);
+		result == service.calcRecurrencesBetween(SEMI_WEEKLY_PAYCHECK, startDate, endDate).size();
 
 		where:
 		endDate                   | result
@@ -98,11 +98,11 @@ class BudgetingServiceTest extends Specification {
 
 	def "calcRecurrencesBetween counts monthly paychecks"() {
 		expect:
-		expected == service.calcRecurrencesBetween(BI_MONTHLY_PAYCHECK_2, startDate, endDate);
+		expected == service.calcRecurrencesBetween(BI_MONTHLY_PAYCHECK_2, startDate, endDate).size();
 
 		where:
 		startDate                 | endDate                   | expected
-		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 1, 30) | 1 //same date is always 1
+		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 1, 30) | 0 //same date is always 0
 		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 2, 28) | 1 //startDate counts, end date doesn't
 		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 3, 1)  | 2
 		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 3, 30) | 2
