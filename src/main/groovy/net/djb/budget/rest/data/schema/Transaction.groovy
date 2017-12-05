@@ -1,5 +1,7 @@
 package net.djb.budget.rest.data.schema;
 
+import groovy.transform.Canonical;
+import groovy.transform.Sortable;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -15,12 +17,10 @@ import javax.persistence.OneToMany;
 import net.djb.budget.rest.constant.TransactionStatus;
 import java.time.LocalDateTime;
 
+@Canonical
+@Sortable(includes=["time","description"])
 @Entity
-class Transaction {
-
-	@Id
-	@GeneratedValue
-	Long id;
+class Transaction implements Comparable<Transaction> {
 
 	LocalDateTime time;
 
@@ -38,6 +38,10 @@ class Transaction {
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "transaction_id", nullable = false)
 	List<Transfer> transfers;
+
+	@Id
+	@GeneratedValue
+	Long id;
 
 }
 

@@ -1,5 +1,6 @@
 package net.djb.budget.rest.data.schema;
 
+import groovy.transform.Canonical;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -15,12 +16,9 @@ import javax.persistence.ManyToOne;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+@Canonical
 @Entity
 class RecurringTransfer {
-
-	@Id
-	@GeneratedValue
-	long id;
 
 	@Column(nullable = false)
 	String description;
@@ -46,6 +44,10 @@ class RecurringTransfer {
 	LocalDate startDate;
 
 	LocalDate endDate;
+
+	@Id
+	@GeneratedValue
+	long id;
 
 }
 
