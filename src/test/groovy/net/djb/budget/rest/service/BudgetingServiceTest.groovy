@@ -66,6 +66,26 @@ class BudgetingServiceTest extends Specification {
 		LONG_TERM_GOAL        | LONG_TERM_GOAL.amount / 2
 	}
 
+	def "a timeline is produced"(){
+		given:
+		def allTx = [
+			SEMI_WEEKLY_PAYCHECK,
+			BI_MONTHLY_PAYCHECK,
+			BI_MONTHLY_PAYCHECK_1,
+			MONTHLY_BILL,
+			WEEKLY_EXPENSE,
+			ANNUAL_BILL,
+			BI_ANNUAL_BILL,
+			LONG_TERM_GOAL
+		]
+
+		when:
+		def result = service.timeline(allTx);
+
+		then:
+		result != null;
+	}
+
 	def "a budget with no fixed expenses returns a completely unallocated transaction"() {
 		given:
 		def incomeId = 0;

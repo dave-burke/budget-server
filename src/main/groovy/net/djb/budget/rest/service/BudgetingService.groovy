@@ -109,6 +109,27 @@ class BudgetingService {
 		return annualized;
 	}
 
+	public Transaction[] timeline(
+			List<RecurringTransfer> recurring,
+			LocalDate start = LocalDate.now(),
+			LocalDate end = LocalDate.now().plusYears(1)){
+		def transactions = [];
+
+		for(def t : recurring){
+			def theseRecurrences = calcRecurrencesBetween(t, start, end);
+			LOG.debug("${t.description} recurs on: ${theseRecurrences}");
+			transactions += theseRecurrences.collect {
+				new Transaction(
+					description: t.description,
+					time: it.atStartOfDay(),
+					transfers: [new Transfer(account: t.account, amount: t.amount)]
+				)
+			};
+		}
+
+		return transactions.toSorted();
+	}
+
 	/**
 	 * Calculates occurrances of <code>t</code> between <code>start</code> (inclusive) and <code>end</code> (exclusive).
 	 */
