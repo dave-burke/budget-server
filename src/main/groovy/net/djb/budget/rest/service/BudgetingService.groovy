@@ -98,7 +98,6 @@ class BudgetingService {
 			break
 		}
 		long annualAmount = amount * ratio * (frequency / quantity)
-		LOG.debug("${t.description}: ${annualAmount} = ${amount} * ${ratio} * (${frequency} / ${quantity})");
 
 		RecurringTransfer annualized = new RecurringTransfer();
 		annualized.description = t.description;
