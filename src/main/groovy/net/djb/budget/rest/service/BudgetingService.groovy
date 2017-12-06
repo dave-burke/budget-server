@@ -119,12 +119,22 @@ class BudgetingService {
 			def theseRecurrences = calcRecurrencesBetween(t, start, end);
 			LOG.debug("${t.description} recurs on: ${theseRecurrences}");
 			transactions += theseRecurrences.collect {
-				new Transaction(
-					description: t.description,
-					time: it.atStartOfDay(),
-					transfers: [new Transfer(account: t.account, amount: t.amount)]
-				)
-			};
+				if(t.amount > 0){
+					LOG.debug("It is an expense");
+					return new Transaction(
+						description: t.description,
+						time: it.atStartOfDay(),
+						transfers: [
+							new Transfer(account: t.account, amount: t.amount * -1),
+							new Transfer(account: "expenses", amount: t.amount)
+						]
+					)
+				} else {
+					LOG.debug("It is income");
+					return buildTransaction(t, it);
+				}
+			}
+
 		}
 
 		return transactions.toSorted();
