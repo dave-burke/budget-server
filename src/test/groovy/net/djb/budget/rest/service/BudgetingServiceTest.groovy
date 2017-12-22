@@ -58,6 +58,24 @@ class BudgetingServiceTest extends Specification {
 	}
 
 	@Unroll
+	def "calcDeduction() correctly calculates deduction for #expense.description from #income.description"(def income, def expense, def expectedResult){
+		when:
+		def result = service.round(service.calcDeduction(income, expense, [income]));
+
+		then:
+		def roundedExpectation = service.round(expectedResult);
+		result > roundedExpectation * 0.90;
+		result < roundedExpectation * 1.10;
+
+		where:
+		income | expense | expectedResult
+		SEMI_WEEKLY_PAYCHECK | WEEKLY_EXPENSE | WEEKLY_EXPENSE.amount * 2
+		SEMI_WEEKLY_PAYCHECK | ANNUAL_BILL | ANNUAL_BILL.amount / 26
+		SEMI_WEEKLY_PAYCHECK | MONTHLY_BILL | MONTHLY_BILL.amount / 2.2
+		SEMI_WEEKLY_PAYCHECK | BI_ANNUAL_BILL | BI_ANNUAL_BILL.amount / 12
+		SEMI_WEEKLY_PAYCHECK | LONG_TERM_GOAL | LONG_TERM_GOAL.amount / 48
+	}
+
 	def "annualize() converts a #paycheck.description paycheck to an annual amount"(def paycheck, def amount){
 		when:
 		RecurringTransfer result = service.annualize(paycheck);
