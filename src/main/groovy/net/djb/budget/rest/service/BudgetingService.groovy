@@ -63,17 +63,27 @@ class BudgetingService {
 		Transfer transfer = new Transfer();
 		transfer.account = expense.account;
 
-		transfer.amount = round(calcDeduction(income, expense, allIncome));
+		transfer.amount = calcDeduction(income, expense, allIncome);
 
 		return transfer;
 	}
 
-	private BigDecimal calcDeduction(RecurringTransfer income, RecurringTransfer expense, List<RecurringTransfer> allIncome){
-		RecurringTransfer annualized = annualize(income);
-		long annualTotal = allIncome.collect { annualize(it) }.sum();
-		def ratio = annualized / annualTotal;
+	private long calcDeduction(RecurringTransfer income, RecurringTransfer expense, List<RecurringTransfer> allIncome){
+		long annualIncome = annualize(income).amount;
+		long annualTotalIncome = allIncome.collect { annualize(it).amount }.sum();
 
-		return expense.amount * ratio;
+		BigDecimal incomeRatio = annualIncome / annualTotalIncome;
+
+		long annualExpense = annualize(expense).amount;
+
+		BigDecimal annualContribution = annualExpense * incomeRatio;
+		
+		BigDecimal incomeAnnualizationRatio = income.amount / annualIncome;
+
+		return round(annualContribution * incomeAnnualizationRatio).longValueExact();
+	}
+
+	private int annualRecurrenceCount(RecurringTransfer t){
 	}
 
 	private RecurringTransfer annualize(RecurringTransfer t){
