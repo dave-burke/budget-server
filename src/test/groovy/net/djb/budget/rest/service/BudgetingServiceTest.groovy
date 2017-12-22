@@ -36,6 +36,20 @@ class BudgetingServiceTest extends Specification {
 	static final RecurringTransfer LONG_TERM_GOAL = new RecurringTransfer(description: "long term goal", frequency: 1, quantity: 2, unit: ChronoUnit.YEARS,
 			amount: 2000, account: "checking/save/long term", startDate: LocalDate.of(2015,1,1));
 
+	static final List<RecurringTransfer> ALL_INCOME = [
+		SEMI_WEEKLY_PAYCHECK,
+		BI_MONTHLY_PAYCHECK,
+		BI_MONTHLY_PAYCHECK_1,
+	]
+	static final List<RecurringTransfer> ALL_EXPENSES = [
+		MONTHLY_BILL,
+		WEEKLY_EXPENSE,
+		ANNUAL_BILL,
+		BI_ANNUAL_BILL,
+		LONG_TERM_GOAL
+	]
+	static final List<RecurringTransfer> ALL_TRANSFERS = ALL_INCOME + ALL_EXPENSES;
+
 	def setup(){
 		recurringTransfers = Mock(RecurringTransferRepository);
 		balances = Mock(BalanceService);
@@ -67,20 +81,8 @@ class BudgetingServiceTest extends Specification {
 	}
 
 	def "a timeline is produced"(){
-		given:
-		def allTx = [
-			SEMI_WEEKLY_PAYCHECK,
-			BI_MONTHLY_PAYCHECK,
-			BI_MONTHLY_PAYCHECK_1,
-			MONTHLY_BILL,
-			WEEKLY_EXPENSE,
-			ANNUAL_BILL,
-			BI_ANNUAL_BILL,
-			LONG_TERM_GOAL
-		]
-
 		when:
-		def result = service.timeline(allTx);
+		def result = service.timeline(ALL_TRANSFERS);
 
 		then:
 		result != null;
