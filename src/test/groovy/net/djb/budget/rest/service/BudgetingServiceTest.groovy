@@ -76,6 +76,7 @@ class BudgetingServiceTest extends Specification {
 		SEMI_WEEKLY_PAYCHECK | LONG_TERM_GOAL | LONG_TERM_GOAL.amount / 48
 	}
 
+	@Unroll
 	def "annualize() converts a #paycheck.description paycheck to an annual amount"(def paycheck, def amount){
 		when:
 		RecurringTransfer result = service.annualize(paycheck);
