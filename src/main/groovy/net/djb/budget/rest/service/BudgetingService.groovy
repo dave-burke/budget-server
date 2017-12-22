@@ -130,7 +130,6 @@ class BudgetingService {
 			LOG.debug("${t.description} recurs on: ${theseRecurrences}");
 			transactions += theseRecurrences.collect {
 				if(t.amount > 0){
-					LOG.debug("It is an expense");
 					return new Transaction(
 						description: t.description,
 						time: it.atStartOfDay(),
@@ -140,7 +139,6 @@ class BudgetingService {
 						]
 					)
 				} else {
-					LOG.debug("It is income");
 					return buildTransaction(t, it);
 				}
 			}
