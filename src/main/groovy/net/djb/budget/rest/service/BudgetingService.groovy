@@ -80,10 +80,8 @@ class BudgetingService {
 		
 		BigDecimal incomeAnnualizationRatio = income.amount / annualIncome;
 
+		LOG.debug("Deduction for '${income.description}' is ((${annualIncome} income / ${annualTotalIncome} total income) * ${annualExpense} expense) * ${incomeAnnualizationRatio} annual frequency");
 		return round(annualContribution * incomeAnnualizationRatio).longValueExact();
-	}
-
-	private int annualRecurrenceCount(RecurringTransfer t){
 	}
 
 	private RecurringTransfer annualize(RecurringTransfer t){
@@ -127,7 +125,6 @@ class BudgetingService {
 
 		for(def t : recurring){
 			def theseRecurrences = calcRecurrencesBetween(t, start, end);
-			LOG.debug("${t.description} recurs on: ${theseRecurrences}");
 			transactions += theseRecurrences.collect {
 				if(t.amount > 0){
 					return new Transaction(

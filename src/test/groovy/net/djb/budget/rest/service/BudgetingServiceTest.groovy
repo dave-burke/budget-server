@@ -26,20 +26,20 @@ class BudgetingServiceTest extends Specification {
 			amount: -1000, account: "income/paychecks/two", startDate: LocalDate.of(2015,1,30));
 
 	static final RecurringTransfer MONTHLY_BILL = new RecurringTransfer(description: "monthly bill", frequency: 1, quantity: 1, unit: ChronoUnit.MONTHS,
-			amount: 500, account: "checking/bills/monthly", startDate: LocalDate.of(2015,1,1));
+			amount: 500, account: "checking/bills/monthly", startDate: LocalDate.of(2015,2,1));
 	static final RecurringTransfer WEEKLY_EXPENSE = new RecurringTransfer(description: "weekly expense", frequency: 1, quantity: 1, unit: ChronoUnit.WEEKS,
-			amount: 100, account: "checking/misc", startDate: LocalDate.of(2015,1,2));
+			amount: 100, account: "checking/misc", startDate: LocalDate.of(2015,1,9));
 	static final RecurringTransfer ANNUAL_BILL = new RecurringTransfer(description: "annual bill", frequency: 1, quantity: 1, unit: ChronoUnit.YEARS,
-			amount: 50, account: "checking/bills/annual", startDate: LocalDate.of(2015,1,1));
+			amount: 50, account: "checking/bills/annual", startDate: LocalDate.of(2016,1,1));
 	static final RecurringTransfer BI_ANNUAL_BILL = new RecurringTransfer(description: "every six months", frequency: 2, quantity: 1, unit: ChronoUnit.YEARS,
-			amount: 300, account: "checking/bills/biannual", startDate: LocalDate.of(2015,1,1));
+			amount: 300, account: "checking/bills/biannual", startDate: LocalDate.of(2015,7,1));
 	static final RecurringTransfer LONG_TERM_GOAL = new RecurringTransfer(description: "long term goal", frequency: 1, quantity: 2, unit: ChronoUnit.YEARS,
-			amount: 2000, account: "checking/save/long term", startDate: LocalDate.of(2015,1,1));
+			amount: 2000, account: "checking/save/long term", startDate: LocalDate.of(2017,1,1));
 
 	static final List<RecurringTransfer> ALL_INCOME = [
 		SEMI_WEEKLY_PAYCHECK,
-		BI_MONTHLY_PAYCHECK,
 		BI_MONTHLY_PAYCHECK_1,
+		BI_MONTHLY_PAYCHECK_2,
 	]
 	static final List<RecurringTransfer> ALL_EXPENSES = [
 		MONTHLY_BILL,
@@ -122,6 +122,50 @@ class BudgetingServiceTest extends Specification {
 		then:
 		result.transfers.size() == 1;
 		result.transfers[0].amount == BI_MONTHLY_PAYCHECK_1.amount;
+	}
+
+	def "a sufficiently seeded ledger will be stably funded for 2 years"(){
+		given:
+		//Each account begins with a reasonable initial balance
+		def seedRatio = 0.25;
+
+		def start = LocalDate.of(2015,1,1);
+		def end = LocalDate.now().plusYears(2);
+
+		Transaction seed = new Transaction(description: "seed", transfers: [
+			new Transfer(MONTHLY_BILL.account, (500 * seedRatio).longValue()),
+			new Transfer(WEEKLY_EXPENSE.account, (400 * seedRatio).longValue()),
+			new Transfer(ANNUAL_BILL.account, (4 * seedRatio).longValue()),
+			new Transfer(BI_ANNUAL_BILL.account, (12 * seedRatio).longValue()),
+			new Transfer(LONG_TERM_GOAL.account, (83 * seedRatio).longValue()),
+		]);
+		def totalSeed = seed.transfers.collect { it.amount }.sum();
+		seed.transfers += [new Transfer("income/equity", totalSeed)]
+
+		recurringTransfers.findWhereAmountIsPositive(_) >> ALL_EXPENSES;
+		recurringTransfers.findWhereAmountIsNegative(_) >> ALL_INCOME;
+
+		when:
+		//All transactions in a two year timeline are committed
+		List<Transaction> transactions = service.timeline(ALL_TRANSFERS, start, end);
+		transactions = [seed] + transactions;
+
+		boolean allPositive = true;
+		transactions.eachWithIndex { tx, i ->
+			def currentTransactions = transactions[0..i];
+			def transfers = currentTransactions.collect { it.transfers}.flatten();
+			def byAccount = transfers.groupBy { it.account };
+			byAccount.each { account, accountTransfers ->
+				def balance = accountTransfers.collect { it.amount }.sum();
+				if(!account.startsWith('income') && balance < 0){
+					allPositive = false;
+				}
+			};
+		}
+
+		then:
+		//No account balance is ever < 0
+		allPositive == true;
 	}
 
 	def "calcRecurrencesBetween counts semi-weekly paychecks"() {
