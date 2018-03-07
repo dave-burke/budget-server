@@ -40,8 +40,12 @@ class BudgetingService {
 	}
 
 	Transaction buildBudget(long incomeId, LocalDate effectiveDate){
-		RecurringTransfer income = recurringTransfers.findOne(incomeId);
-		buildTransaction(income, effectiveDate);
+		Optional<RecurringTransfer> income = recurringTransfers.findById(incomeId);
+		if(income.isPresent()){
+			return buildTransaction(income.get(), effectiveDate);
+		} else {
+			throw new IllegalArgumentException("No recurring transfer found with ID " + incomeId);
+		}
 	}
 
 	private Transaction buildTransaction(RecurringTransfer income, LocalDate effectiveDate) {
