@@ -112,7 +112,7 @@ class BudgetingServiceTest extends Specification {
 		def incomeId = 0;
 		def effectiveDate = LocalDate.now();
 
-		recurringTransfers.findOne(incomeId) >> BI_MONTHLY_PAYCHECK_1;
+		recurringTransfers.findById(incomeId) >> Optional.of(BI_MONTHLY_PAYCHECK_1);
 		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [SEMI_WEEKLY_PAYCHECK, BI_MONTHLY_PAYCHECK_1, BI_MONTHLY_PAYCHECK_2];
 		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [];
 
