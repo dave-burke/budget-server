@@ -1,6 +1,7 @@
 package net.djb.budget.rest.service;
 
 import spock.lang.Specification;
+import spock.lang.Unroll;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -17,21 +18,37 @@ class BudgetingServiceTest extends Specification {
 
 	static final RecurringTransfer SEMI_WEEKLY_PAYCHECK = new RecurringTransfer(description: "every two weeks", frequency: 1, quantity: 2, unit: ChronoUnit.WEEKS,
 			amount: -1000, account: "income/paychecks/one", startDate: LocalDate.of(2015,1,2));
+	static final RecurringTransfer BI_MONTHLY_PAYCHECK = new RecurringTransfer(description: "twice a month", frequency: 2, quantity: 1, unit: ChronoUnit.MONTHS,
+			amount: -1000, account: "income/paychecks/two", startDate: LocalDate.of(2015,1,15));
 	static final RecurringTransfer BI_MONTHLY_PAYCHECK_1 = new RecurringTransfer(description: "15th", frequency: 1, quantity: 1, unit: ChronoUnit.MONTHS,
 			amount: -1000, account: "income/paychecks/two", startDate: LocalDate.of(2015,1,15));
 	static final RecurringTransfer BI_MONTHLY_PAYCHECK_2 = new RecurringTransfer(description: "30th", frequency: 1, quantity: 1, unit: ChronoUnit.MONTHS,
 			amount: -1000, account: "income/paychecks/two", startDate: LocalDate.of(2015,1,30));
 
 	static final RecurringTransfer MONTHLY_BILL = new RecurringTransfer(description: "monthly bill", frequency: 1, quantity: 1, unit: ChronoUnit.MONTHS,
-			amount: 500, account: "checking/bills/monthly", startDate: LocalDate.of(2015,1,1));
+			amount: 500, account: "checking/bills/monthly", startDate: LocalDate.of(2015,2,1));
 	static final RecurringTransfer WEEKLY_EXPENSE = new RecurringTransfer(description: "weekly expense", frequency: 1, quantity: 1, unit: ChronoUnit.WEEKS,
-			amount: 100, account: "checking/misc", startDate: LocalDate.of(2015,1,2));
+			amount: 100, account: "checking/misc", startDate: LocalDate.of(2015,1,9));
 	static final RecurringTransfer ANNUAL_BILL = new RecurringTransfer(description: "annual bill", frequency: 1, quantity: 1, unit: ChronoUnit.YEARS,
-			amount: 50, account: "checking/bills/annual", startDate: LocalDate.of(2015,1,1));
+			amount: 50, account: "checking/bills/annual", startDate: LocalDate.of(2016,1,1));
 	static final RecurringTransfer BI_ANNUAL_BILL = new RecurringTransfer(description: "every six months", frequency: 2, quantity: 1, unit: ChronoUnit.YEARS,
-			amount: 300, account: "checking/bills/biannual", startDate: LocalDate.of(2015,1,1));
+			amount: 300, account: "checking/bills/biannual", startDate: LocalDate.of(2015,7,1));
 	static final RecurringTransfer LONG_TERM_GOAL = new RecurringTransfer(description: "long term goal", frequency: 1, quantity: 2, unit: ChronoUnit.YEARS,
-			amount: 2000, account: "checking/save/long term", startDate: LocalDate.of(2015,1,1));
+			amount: 2000, account: "checking/save/long term", startDate: LocalDate.of(2017,1,1));
+
+	static final List<RecurringTransfer> ALL_INCOME = [
+		SEMI_WEEKLY_PAYCHECK,
+		BI_MONTHLY_PAYCHECK_1,
+		BI_MONTHLY_PAYCHECK_2,
+	]
+	static final List<RecurringTransfer> ALL_EXPENSES = [
+		MONTHLY_BILL,
+		WEEKLY_EXPENSE,
+		ANNUAL_BILL,
+		BI_ANNUAL_BILL,
+		LONG_TERM_GOAL
+	]
+	static final List<RecurringTransfer> ALL_TRANSFERS = ALL_INCOME + ALL_EXPENSES;
 
 	def setup(){
 		recurringTransfers = Mock(RecurringTransferRepository);
@@ -40,135 +57,54 @@ class BudgetingServiceTest extends Specification {
                 service.balances = balances;
 	}
 
-	def "correctly calculates a weekly expense for a semiWeekly paycheck"() {
-		setup:
-		def incomeId = 0;
+	@Unroll
+	def "calcDeduction() correctly calculates deduction for #expense.description from #income.description"(def income, def expense, def expectedResult){
+		when:
+		def result = service.round(service.calcDeduction(income, expense, [income]));
 
-		recurringTransfers.findOne(incomeId) >> SEMI_WEEKLY_PAYCHECK;
-		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [SEMI_WEEKLY_PAYCHECK];
-		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [WEEKLY_EXPENSE];
-
-		balances.calcBalance(_) >> balance;
-
-		expect:
-		Transaction budget = service.buildBudget(incomeId, effectiveDate);
-		result == budget.transfers.find{it.account == WEEKLY_EXPENSE.account}.amount;
+		then:
+		def roundedExpectation = service.round(expectedResult);
+		result > roundedExpectation * 0.90;
+		result < roundedExpectation * 1.10;
 
 		where:
-		effectiveDate             | balance | result
-		LocalDate.of(2015, 1, 2)  | 0       | 200
-		LocalDate.of(2015, 1, 16) | 10      | 190 
-		LocalDate.of(2015, 1, 30) | 200     | 0
-		LocalDate.of(2015, 2, 13) | 210     | -10
+		income | expense | expectedResult
+		SEMI_WEEKLY_PAYCHECK | WEEKLY_EXPENSE | WEEKLY_EXPENSE.amount * 2
+		SEMI_WEEKLY_PAYCHECK | ANNUAL_BILL | ANNUAL_BILL.amount / 26
+		SEMI_WEEKLY_PAYCHECK | MONTHLY_BILL | MONTHLY_BILL.amount / 2.2
+		SEMI_WEEKLY_PAYCHECK | BI_ANNUAL_BILL | BI_ANNUAL_BILL.amount / 12
+		SEMI_WEEKLY_PAYCHECK | LONG_TERM_GOAL | LONG_TERM_GOAL.amount / 48
 	}
 
-	def "correctly calculates a monthly bill for a semiWeekly paycheck"() {
-		setup:
-		def incomeId = 0;
+	@Unroll
+	def "annualize() converts a #paycheck.description paycheck to an annual amount"(def paycheck, def amount){
+		when:
+		RecurringTransfer result = service.annualize(paycheck);
 
-		recurringTransfers.findOne(incomeId) >> SEMI_WEEKLY_PAYCHECK;
-		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [SEMI_WEEKLY_PAYCHECK];
-		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [MONTHLY_BILL];
-
-		balances.calcBalance(_) >> balance;
-
-		expect:
-		Transaction budget = service.buildBudget(incomeId, effectiveDate);
-		result == budget.transfers.find{it.account == MONTHLY_BILL.account}.amount;
+		then:
+		result.frequency == 1;
+		result.quantity == 1;
+		result.unit == ChronoUnit.YEARS;
+		result.amount == amount;
 
 		where:
-		effectiveDate             | balance | result
-		LocalDate.of(2015, 1, 2)  | 0       | 167
-		LocalDate.of(2015, 1, 16) | 167     | 167
-		LocalDate.of(2015, 1, 30) | 334     | 166
+		paycheck              | amount
+		SEMI_WEEKLY_PAYCHECK  | SEMI_WEEKLY_PAYCHECK.amount * 26
+		BI_MONTHLY_PAYCHECK   | BI_MONTHLY_PAYCHECK.amount * 24
+		BI_MONTHLY_PAYCHECK_1 | BI_MONTHLY_PAYCHECK_1.amount * 12
+		MONTHLY_BILL          | MONTHLY_BILL.amount * 12
+		WEEKLY_EXPENSE        | WEEKLY_EXPENSE.amount * 52
+		ANNUAL_BILL           | ANNUAL_BILL.amount
+		BI_ANNUAL_BILL        | BI_ANNUAL_BILL.amount * 2
+		LONG_TERM_GOAL        | LONG_TERM_GOAL.amount / 2
 	}
 
-	def "correctly calculates an annual bill for a semiWeekly paycheck"() {
-		setup:
-		def incomeId = 0;
+	def "a timeline is produced"(){
+		when:
+		def result = service.timeline(ALL_TRANSFERS);
 
-		recurringTransfers.findOne(incomeId) >> SEMI_WEEKLY_PAYCHECK;
-		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [SEMI_WEEKLY_PAYCHECK];
-		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [ANNUAL_BILL];
-
-		balances.calcBalance(_) >> balance;
-
-		expect:
-		Transaction budget = service.buildBudget(incomeId, effectiveDate);
-		result == budget.transfers.find{it.account == ANNUAL_BILL.account}.amount;
-
-		where:
-		effectiveDate             | balance | result
-		LocalDate.of(2015, 1, 2)  | 0       | 2
-		LocalDate.of(2015, 1, 16) | 2       | 2 
-		LocalDate.of(2015, 1, 30) | 4       | 2
-	}
-
-	def "correctly calculates a weekly expense for a biMonthly paycheck 1"() {
-		setup:
-		def incomeId = 0;
-
-		recurringTransfers.findOne(incomeId) >> paycheck;
-		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [BI_MONTHLY_PAYCHECK_1, BI_MONTHLY_PAYCHECK_2];
-		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [WEEKLY_EXPENSE];
-
-		balances.calcBalance(_) >> balance;
-
-		expect:
-		Transaction budget = service.buildBudget(incomeId, effectiveDate);
-		result == budget.transfers.find{it.account == WEEKLY_EXPENSE.account}.amount;
-
-		where:
-		effectiveDate             | paycheck              | balance | result
-		LocalDate.of(2015, 1, 15) | BI_MONTHLY_PAYCHECK_1 | 0       | 213 //needs to last 15 days, not 2 weeks
-		LocalDate.of(2015, 1, 30) | BI_MONTHLY_PAYCHECK_2 | 0       | 225 //needs to last 16 days
-		LocalDate.of(2015, 2, 15) | BI_MONTHLY_PAYCHECK_1 | 0       | 213
-		LocalDate.of(2015, 2, 28) | BI_MONTHLY_PAYCHECK_2 | 13      | 200
-		LocalDate.of(2015, 3, 15) | BI_MONTHLY_PAYCHECK_1 | 220     | -8
-	}
-
-	def "correctly calculates a monthly bill for a biMonthly paycheck 1"() {
-		setup:
-		def incomeId = 0;
-
-		recurringTransfers.findOne(incomeId) >> BI_MONTHLY_PAYCHECK_1;
-		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [BI_MONTHLY_PAYCHECK_1, BI_MONTHLY_PAYCHECK_2];
-		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [MONTHLY_BILL];
-
-		balances.calcBalance(_) >> balance;
-
-		expect:
-		Transaction budget = service.buildBudget(incomeId, effectiveDate);
-		result == budget.transfers.find{it.account == MONTHLY_BILL.account}.amount;
-
-		where:
-		effectiveDate             | paycheck              | balance | result
-		LocalDate.of(2015, 1, 15) | BI_MONTHLY_PAYCHECK_1 | 0       | 250
-		LocalDate.of(2015, 1, 30) | BI_MONTHLY_PAYCHECK_2 | 250     | 250
-		LocalDate.of(2015, 2, 15) | BI_MONTHLY_PAYCHECK_1 | 0       | 250
-		LocalDate.of(2015, 2, 28) | BI_MONTHLY_PAYCHECK_2 | 250     | 250
-		LocalDate.of(2015, 3, 30) | BI_MONTHLY_PAYCHECK_2 | 0       | 500
-	}
-
-	def "correctly calculates an annual bill for a biMonthly paycheck"() {
-		setup:
-		def incomeId = 0;
-
-		recurringTransfers.findOne(incomeId) >> BI_MONTHLY_PAYCHECK_1;
-		recurringTransfers.findWhereAmountIsNegative(effectiveDate) >> [BI_MONTHLY_PAYCHECK_1, BI_MONTHLY_PAYCHECK_2];
-		recurringTransfers.findWhereAmountIsPositive(effectiveDate) >> [ANNUAL_BILL];
-
-		balances.calcBalance(_) >> balance;
-
-		expect:
-		Transaction budget = service.buildBudget(incomeId, effectiveDate);
-		result == budget.transfers.find{it.account == ANNUAL_BILL.account}.amount;
-
-		where:
-		effectiveDate             | balance | result
-		LocalDate.of(2015, 1, 15) | 0       | 3
-		LocalDate.of(2015, 2, 15) | 6       | 3 
-		LocalDate.of(2015, 3, 15) | 9       | 3
+		then:
+		result != null;
 	}
 
 	def "a budget with no fixed expenses returns a completely unallocated transaction"() {
@@ -188,12 +124,56 @@ class BudgetingServiceTest extends Specification {
 		result.transfers[0].amount == BI_MONTHLY_PAYCHECK_1.amount;
 	}
 
+	def "a sufficiently seeded ledger will be stably funded for 2 years"(){
+		given:
+		//Each account begins with a reasonable initial balance
+		def seedRatio = 0.25;
+
+		def start = LocalDate.of(2015,1,1);
+		def end = LocalDate.now().plusYears(2);
+
+		Transaction seed = new Transaction(description: "seed", transfers: [
+			new Transfer(MONTHLY_BILL.account, (500 * seedRatio).longValue()),
+			new Transfer(WEEKLY_EXPENSE.account, (400 * seedRatio).longValue()),
+			new Transfer(ANNUAL_BILL.account, (4 * seedRatio).longValue()),
+			new Transfer(BI_ANNUAL_BILL.account, (12 * seedRatio).longValue()),
+			new Transfer(LONG_TERM_GOAL.account, (83 * seedRatio).longValue()),
+		]);
+		def totalSeed = seed.transfers.collect { it.amount }.sum();
+		seed.transfers += [new Transfer("income/equity", totalSeed)]
+
+		recurringTransfers.findWhereAmountIsPositive(_) >> ALL_EXPENSES;
+		recurringTransfers.findWhereAmountIsNegative(_) >> ALL_INCOME;
+
+		when:
+		//All transactions in a two year timeline are committed
+		List<Transaction> transactions = service.timeline(ALL_TRANSFERS, start, end);
+		transactions = [seed] + transactions;
+
+		boolean allPositive = true;
+		transactions.eachWithIndex { tx, i ->
+			def currentTransactions = transactions[0..i];
+			def transfers = currentTransactions.collect { it.transfers}.flatten();
+			def byAccount = transfers.groupBy { it.account };
+			byAccount.each { account, accountTransfers ->
+				def balance = accountTransfers.collect { it.amount }.sum();
+				if(!account.startsWith('income') && balance < 0){
+					allPositive = false;
+				}
+			};
+		}
+
+		then:
+		//No account balance is ever < 0
+		allPositive == true;
+	}
+
 	def "calcRecurrencesBetween counts semi-weekly paychecks"() {
 		setup:
 		def startDate = LocalDate.of(2015, 1, 2);
 
 		expect:
-		result == service.calcRecurrencesBetween(SEMI_WEEKLY_PAYCHECK, startDate, endDate);
+		result == service.calcRecurrencesBetween(SEMI_WEEKLY_PAYCHECK, startDate, endDate).size();
 
 		where:
 		endDate                   | result
@@ -203,11 +183,11 @@ class BudgetingServiceTest extends Specification {
 
 	def "calcRecurrencesBetween counts monthly paychecks"() {
 		expect:
-		expected == service.calcRecurrencesBetween(BI_MONTHLY_PAYCHECK_2, startDate, endDate);
+		expected == service.calcRecurrencesBetween(BI_MONTHLY_PAYCHECK_2, startDate, endDate).size();
 
 		where:
 		startDate                 | endDate                   | expected
-		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 1, 30) | 1 //same date is always 1
+		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 1, 30) | 0 //same date is always 0
 		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 2, 28) | 1 //startDate counts, end date doesn't
 		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 3, 1)  | 2
 		LocalDate.of(2015, 1, 30) | LocalDate.of(2015, 3, 30) | 2
