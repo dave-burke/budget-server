@@ -125,10 +125,10 @@ class BudgetingService {
 			List<RecurringTransfer> recurring,
 			LocalDate start = LocalDate.now(),
 			LocalDate end = LocalDate.now().plusYears(1)){
-		def transactions = [];
+		Transaction[] transactions = [];
 
-		for(def t : recurring){
-			def theseRecurrences = calcRecurrencesBetween(t, start, end);
+		for(RecurringTransfer t : recurring){
+			List<LocalDate> theseRecurrences = calcRecurrencesBetween(t, start, end);
 			transactions += theseRecurrences.collect {
 				if(t.amount > 0){
 					return new Transaction(
@@ -152,8 +152,8 @@ class BudgetingService {
 	/**
 	 * Calculates occurrances of <code>t</code> between <code>start</code> (inclusive) and <code>end</code> (exclusive).
 	 */
-	private LocalDate[] calcRecurrencesBetween(RecurringTransfer t, LocalDate start, LocalDate end){
-		def occurrencesBetween = [];
+	private List<LocalDate> calcRecurrencesBetween(RecurringTransfer t, LocalDate start, LocalDate end){
+		List<LocalDate> occurrencesBetween = [];
 		int occurrencesTotal = 0;
 		LocalDate iDate = t.startDate;
 		while(iDate < end){
