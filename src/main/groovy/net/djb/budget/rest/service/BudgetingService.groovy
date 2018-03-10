@@ -51,7 +51,7 @@ class BudgetingService {
 	private Transaction buildTransaction(RecurringTransfer income, LocalDate effectiveDate) {
 		Transaction transaction = new Transaction();
 		transaction.description = income.description;
-		transaction.time = effectiveDate.atStartOfDay(); 
+		transaction.time = effectiveDate.atStartOfDay();
 
 		transaction.transfers = [new Transfer(account: income.account, amount: income.amount)];
 
@@ -89,35 +89,35 @@ class BudgetingService {
 	}
 
 	private RecurringTransfer annualize(RecurringTransfer t){
-		int quantity = t.quantity
-		int frequency = t.frequency
-		ChronoUnit unit = t.unit
-		long amount = t.amount
+		int quantity = t.quantity;
+		int frequency = t.frequency;
+		ChronoUnit unit = t.unit;
+		long amount = t.amount;
 
 		int ratio;
 		switch(t.unit){
 		case ChronoUnit.DAYS:
-			ratio = 365
-			break
+			ratio = 365;
+			break;
 		case ChronoUnit.WEEKS:
-			ratio = 52
-			break
+			ratio = 52;
+			break;
 		case ChronoUnit.MONTHS:
-			ratio = 12
-			break
+			ratio = 12;
+			break;
 		case ChronoUnit.YEARS:
-			ratio = 1
-			break
+			ratio = 1;
+			break;
 		}
-		long annualAmount = amount * ratio * (frequency / quantity)
+		long annualAmount = amount * ratio * (frequency / quantity);
 
 		RecurringTransfer annualized = new RecurringTransfer();
 		annualized.description = t.description;
 		annualized.account = t.account;
 		annualized.quantity = 1;
 		annualized.frequency = 1;
-		annualized.unit = ChronoUnit.YEARS
-		annualized.amount = annualAmount
+		annualized.unit = ChronoUnit.YEARS;
+		annualized.amount = annualAmount;
 		return annualized;
 	}
 
@@ -125,10 +125,10 @@ class BudgetingService {
 			List<RecurringTransfer> recurring,
 			LocalDate start = LocalDate.now(),
 			LocalDate end = LocalDate.now().plusYears(1)){
-		def transactions = [];
+		Transaction[] transactions = [];
 
-		for(def t : recurring){
-			def theseRecurrences = calcRecurrencesBetween(t, start, end);
+		for(RecurringTransfer t : recurring){
+			List<LocalDate> theseRecurrences = calcRecurrencesBetween(t, start, end);
 			transactions += theseRecurrences.collect {
 				if(t.amount > 0){
 					return new Transaction(
@@ -152,8 +152,8 @@ class BudgetingService {
 	/**
 	 * Calculates occurrances of <code>t</code> between <code>start</code> (inclusive) and <code>end</code> (exclusive).
 	 */
-	private LocalDate[] calcRecurrencesBetween(RecurringTransfer t, LocalDate start, LocalDate end){
-		def occurrencesBetween = [];
+	private List<LocalDate> calcRecurrencesBetween(RecurringTransfer t, LocalDate start, LocalDate end){
+		List<LocalDate> occurrencesBetween = [];
 		int occurrencesTotal = 0;
 		LocalDate iDate = t.startDate;
 		while(iDate < end){
@@ -190,5 +190,5 @@ class BudgetingService {
 			throw new UnsupportedTemporalTypeException("${t.unit} is not a supported ChronoUnit for RecurringTransfer Periods. Supported units are DAYS, WEEKS, MONTHS, & YEARS.");
 		}
 	}
-	
+
 }
